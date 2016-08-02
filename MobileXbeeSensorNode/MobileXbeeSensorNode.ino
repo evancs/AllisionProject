@@ -1,5 +1,5 @@
 /*****************************************************************
-MPU9150_AHRS.ino
+MobileXbeeSensorNode.ino
 SFE_MPU9150 Library AHRS Data Fusion Example Code
 Kris Winer for Sparkfun Electronics
 Original Creation Date: April 8, 2014
