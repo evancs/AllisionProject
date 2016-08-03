@@ -311,7 +311,12 @@ void loop()
     datapacket[0]=yaw;
     datapacket[1]=pitch;
     datapacket[2]=roll;
-    sendData(datapacket, 3);
+    
+    datapacket[0]=300;
+    datapacket[1]=257;
+    datapacket[2]=11;
+    
+    sendData(datapacket, sizeof(datapacket));
 
     count = millis();
     
@@ -504,8 +509,9 @@ void sendData(int Data[], int datalength) {
   Serial.write(0x7E); //start byte
 
   //16 bytes
-  Serial.write((byte)0x0); //length
-  Serial.write(0x0E + datalength*2); //length each data is 2 bytes
+  Serial.write((byte)0x00); //length
+  
+  Serial.write(0x0E + datalength); //length each data is 2 bytes
 
   Serial.write(0x10); //Frame type
   Serial.write(0x01); //FrameID
@@ -521,10 +527,10 @@ void sendData(int Data[], int datalength) {
   // Serial.write(0xA0 ); //64-bit dest. address
 
   //RECEIVER_2
-  Serial.write((byte)0x0); //64-bit dest. address
+  Serial.write((byte)0x00); //64-bit dest. address
   Serial.write(0x13); //64-bit dest. address
   Serial.write(0xA2); //64-bit dest. address
-  Serial.write((byte)0x0); //64-bit dest. address
+  Serial.write((byte)0x00); //64-bit dest. address
   Serial.write(0x41); //64-bit dest. address
   Serial.write(0x52); //64-bit dest. address
   Serial.write(0x78); //64-bit dest. address
@@ -543,7 +549,7 @@ void sendData(int Data[], int datalength) {
   Serial.write(0xFF); //16-bit dest. address
   Serial.write(0xFE); //16-bit dest. address
 
-  Serial.write((byte)0x0); //broadcast radius
+  Serial.write((byte)0x00); //broadcast radius
 
   Serial.write(0xC0); //Options
 

@@ -9,18 +9,6 @@ if(isempty(repeatind))
 end
 startind=flagind(repeatind(1));
 
-% in case wrong double flag
-% i=2;
-% while(mean(rawdata(startind:2*col:startind*50))~=flag)
-%     startind=flagind(repeatind(i));
-%     if i==length(repeatind)
-%         'too many failed packets'
-%         break
-%     end
-%     i=i+1;
-% end
-
-
 % truncate excess at beginning & end
 rawdatatrunc=rawdata(startind:end);
 excess=mod(length(rawdatatrunc),col);
