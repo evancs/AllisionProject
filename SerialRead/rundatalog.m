@@ -1,4 +1,4 @@
-function [D] = runtailbot(Inp,fname)
+function [D] = rundatalog(Inp,fname)
 
 % Opens serial channel and records xbee data
 % converts 2 byte 2's complement binary data to decimal
