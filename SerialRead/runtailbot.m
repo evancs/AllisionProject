@@ -123,31 +123,6 @@ D.Inp = Inp;
 
 SaveData(D,fname)
 
-
-%% plot data 
-plotdata(D);
-
-%% just for acquiring stationary data for TVCF parameters
-% sigma1=std(data_exp(2:end,6)/100)
-% sigma2=std(data_exp(2:end,7)/100)
-% sigma3=std(data_exp(2:end,8)/100)
-% sigma4=std(data_exp(2:end,9)/100)
-% 
-% %sigma1 = sigma1*2;
-% %sigma2 = sigma2*5;
-% %sigma3 = sigma3*10;
-% 
-% xo1 = 3*sigma1
-% xo2 = 3*sigma2
-% xo3 = 3*sigma3
-% xo4 = 3*sigma4
-% 
-% s1 = atan(-0.8)/(-sigma1)
-% s2 = atan(-0.8)/(-sigma2)
-% s3 = atan(-0.8)/(-sigma3)
-% s4 = atan(-0.8)/(-sigma4)
-
-
     function SaveData(D,fname)
 
         % If user used pound symbols to automate numbering, get the correct
