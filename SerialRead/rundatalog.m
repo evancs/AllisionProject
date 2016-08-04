@@ -11,16 +11,16 @@ com = 'COM21'; % specify com channel
 % MATCH BAUDRATE WITH XBEE!!!
 bdr = 38400;
 
-col_exp = 20; % cole = data columns + 1(for flag)
+col_exp = 20; % col = data columns + 1(for flag)
 bfs_exp = 300; % buffer size for experiment
-flag_exp = 126; % binary 1111110 Hex 7E
+
 s_exp = serial(com,'BaudRate',bdr,'DataBits',8,'StopBits',1,'InputBufferSize',bfs_exp)
 % open serial channel
 fopen(s_exp)
 %fprintf(s_exp,'!!SF1')
 
 % initialize
-rawdata_exp = zeros(bfs_exp,1);
+% rawdata_exp = zeros(bfs_exp,1);
 
 bytes = 0;
 %keyboard
@@ -31,13 +31,15 @@ while bytes < 100;
 end
 
 % Read data streaming from XBEE
-try
-    rawdata_exp = fread(s_exp,bfs_exp);
-catch ME
-    fclose(s_exp)
-    throw(ME)
+for i = 1:100
+    try
+        %rawdata_exp = fread(s_exp,bfs_exp);
+        rawdata_exp(i) = fread(s_exp,1,'uchar');
+    catch ME
+        fclose(s_exp)
+        throw(ME)
+    end
 end
-
 % Close serial object
 fclose(s_exp)
 delete(s_exp)
@@ -45,8 +47,9 @@ clear s_exp
 
 rawdata_exp
 
+flag_exp = 126; % binary 1111110 Hex 7E
 % Convert serial data:
-%data_exp=serial2datan(rawdata_exp, col_exp, flag_exp);
+data_exp=serial2datan(rawdata_exp, col_exp, flag_exp)
 
 % Save data:
 % data_exp(:,5)=data_exp(:,5)/100; %Accmag*100
@@ -58,6 +61,6 @@ rawdata_exp
 % D.Header_Data = {'Flag' 'Time (ms)' 'Pwm Tail (-255 254)' 'Pwm wheel (-255 254)' 'Accmag (g)' 'Acc z (g)' 'Acc Y (g)' 'Gyro (deg/s)' 'Tail Angle (deg)' 'Body Angle Sensor Fusion (deg)'};
 % D.RawData = rawdata_exp;
 
-%SaveData(D,fname)  
+%SaveData(D,fname)
 
 end
