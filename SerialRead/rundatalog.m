@@ -10,47 +10,39 @@ com = 'COM21'; % specify com channel
 
 % MATCH BAUDRATE WITH XBEE!!!
 bdr = 38400;
+bfs_exp = 50;
 
-col_exp = 20; % col = data columns + 1(for flag)
-bfs_exp = 300; % buffer size for experiment
-
+% create serial object
 s_exp = serial(com,'BaudRate',bdr,'DataBits',8,'StopBits',1,'InputBufferSize',bfs_exp)
+
 % open serial channel
 fopen(s_exp)
-%fprintf(s_exp,'!!SF1')
 
-% initialize
-% rawdata_exp = zeros(bfs_exp,1);
-
-bytes = 0;
-%keyboard
-
-% Wait for data to become available before reading:
-while bytes < 100;
-    bytes = s_exp.BytesAvailable;
-end
-
+%initialize
+rawdata_exp = zeros(1000,1);
+tic
 % Read data streaming from XBEE
-for i = 1:100
+for i = 1:1000
     try
-        %rawdata_exp = fread(s_exp,bfs_exp);
-        rawdata_exp(i) = fread(s_exp,1,'uchar');
+        rawdata_exp(i) = fread(s_exp,1,'uchar'); % extract 1 byte
     catch ME
         fclose(s_exp)
         throw(ME)
     end
 end
+toc
+
+tic 
 % Close serial object
 fclose(s_exp)
 delete(s_exp)
 clear s_exp
+toc
 
-rawdata_exp
-
-flag_exp = 126; % binary 1111110 Hex 7E
+tic
 % Convert serial data:
-data_exp=serial2datan(rawdata_exp, col_exp, flag_exp)
-
+data_exp = serial2datan(rawdata_exp)
+toc
 % Save data:
 % data_exp(:,5)=data_exp(:,5)/100; %Accmag*100
 % data_exp(:,6)=data_exp(:,6)/100; %gz*100

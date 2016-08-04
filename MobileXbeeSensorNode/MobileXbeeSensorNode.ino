@@ -508,10 +508,10 @@ static void print_str(const char *str, int len)
 void sendData(int Data[], int datalength) {
   Serial.write(0x7E); //start byte
 
-  //16 bytes
-  Serial.write((byte)0x00); //length
+  //16 bytes  //length
+  Serial.write((byte)0x00); //MSB
   
-  Serial.write(0x0E + datalength); //length each data is 2 bytes
+  Serial.write(0x0E + datalength); //LSB
 
   Serial.write(0x10); //Frame type
   Serial.write(0x01); //FrameID
