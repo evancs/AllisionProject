@@ -13,26 +13,30 @@ bdr = 38400;
 bfs_exp = 50;
 
 % create serial object
-s_exp = serial(com,'BaudRate',bdr,'DataBits',8,'StopBits',1,'InputBufferSize',bfs_exp)
+s_exp = serial(com,'BaudRate',bdr,'DataBits',8,'StopBits',1,'InputBufferSize',bfs_exp, 'Parity', 'none')
 
 % open serial channel
 fopen(s_exp)
 
 %initialize
-rawdata_exp = zeros(1000,1);
+rawdata_exp = zeros(300,1);
+
 tic
+
 % Read data streaming from XBEE
-for i = 1:1000
+for i = 1:300
     try
         rawdata_exp(i) = fread(s_exp,1,'uchar'); % extract 1 byte
     catch ME
         fclose(s_exp)
         throw(ME)
     end
+    
 end
+
 toc
 
-tic 
+tic
 % Close serial object
 fclose(s_exp)
 delete(s_exp)
@@ -50,7 +54,7 @@ toc
 % data_exp(:,9)=data_exp(:,9)/10; % tail_angle*100
 % data_exp(:,10)=data_exp(:,10)/100; % thsf*100
 % D.Data = data_exp;
-% D.Header_Data = {'Flag' 'Time (ms)' 'Pwm Tail (-255 254)' 'Pwm wheel (-255 254)' 'Accmag (g)' 'Acc z (g)' 'Acc Y (g)' 'Gyro (deg/s)' 'Tail Angle (deg)' 'Body Angle Sensor Fusion (deg)'};
+% D.Header_Data = {'ID' 'Time' 'Data1' 'Data2' 'Data3'};
 % D.RawData = rawdata_exp;
 
 %SaveData(D,fname)
