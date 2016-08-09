@@ -101,7 +101,8 @@ float eInt[3] = {0.0f, 0.0f, 0.0f};       // vector to hold integral error for M
 // The serial connection to the GPS device
 SoftwareSerial ss(RXPin, TXPin);
 
-//Wireless data transfer
+//Wireless data transfer packet
+//Set size to number of data points set
 int datapacket[3];
 
 void setup()
@@ -180,15 +181,16 @@ void loop()
   unsigned long age, date, time, chars = 0;
   unsigned short sentences = 0, failed = 0;
   static const double LONDON_LAT = 51.508131, LONDON_LON = -0.128002;
+  
   if (mpu.getIntDataReadyStatus() == 1) { // wait for data ready status register to update all data registers
     mcount++;
     // read the raw sensor data
-    mpu.getAcceleration  ( &a1, &a2, &a3  );
+    mpu.getAcceleration  ( &a1, &a2, &a3 );
     ax = a1 * 2.0f / 32768.0f; // 2 g full range for accelerometer
     ay = a2 * 2.0f / 32768.0f;
     az = a3 * 2.0f / 32768.0f;
 
-    mpu.getRotation  ( &g1, &g2, &g3  );
+    mpu.getRotation  ( &g1, &g2, &g3 );
     gx = g1 * 250.0f / 32768.0f; // 250 deg/s full range for gyroscope
     gy = g2 * 250.0f / 32768.0f;
     gz = g3 * 250.0f / 32768.0f;
@@ -212,9 +214,11 @@ void loop()
     // }
   }
 
+  //Compute loop time for integration
   now = micros();
-  deltat = ((now - lastUpdate) / 1000000.0f); // set integration time by time elapsed since last filter update
+  deltat = ((now - lastUpdate) / 1000000.0f); 
   lastUpdate = now;
+  
   // Sensors x (y)-axis of the accelerometer is aligned with the y (x)-axis of the magnetometer;
   // the magnetometer z-axis (+ down) is opposite to z-axis (+ up) of accelerometer and gyro!
   // We have to make some allowance for this orientationmismatch in feeding the output to the quaternion filter.
@@ -226,7 +230,7 @@ void loop()
 
   // Serial print and/or display at 0.5 s rate independent of data rates
   delt_t = millis() - count;
-  if (delt_t > 500) { // update LCD once per half-second independent of read rate
+  if (delt_t > 500) { // update once per half-second independent of read rate
 
     //Print raw IMU data
     Serial.print("ax = "); Serial.print((int)1000 * ax);
@@ -258,7 +262,7 @@ void loop()
     pitch = -asin(2.0f * (q[1] * q[3] - q[0] * q[2]));
     roll  = atan2(2.0f * (q[0] * q[1] + q[2] * q[3]), q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3]);
     pitch *= 180.0f / PI;
-    yaw   *= 180.0f / PI ; //- 13.8; // Declination at Danville, California is 13 degrees 48 minutes and 47 seconds on 2014-04-04
+    yaw   *= 180.0f / PI;
     roll  *= 180.0f / PI;
 
     //Print IMU data
@@ -430,7 +434,6 @@ static void print_float(float val, float invalid, int len, int prec)
     for (int i = flen; i < len; ++i)
       Serial.print(' ');
   }
-  smartdelay(0);
 }
 
 static void print_int(unsigned long val, unsigned long invalid, int len)
@@ -446,7 +449,6 @@ static void print_int(unsigned long val, unsigned long invalid, int len)
   if (len > 0)
     sz[len - 1] = ' ';
   Serial.print(sz);
-  smartdelay(0);
 }
 
 static void print_date(TinyGPS &gps)
@@ -465,7 +467,6 @@ static void print_date(TinyGPS &gps)
     Serial.print(sz);
   }
   print_int(age, TinyGPS::GPS_INVALID_AGE, 5);
-  smartdelay(0);
 }
 
 static void print_str(const char *str, int len)
@@ -473,7 +474,6 @@ static void print_str(const char *str, int len)
   int slen = strlen(str);
   for (int i = 0; i < len; ++i)
     Serial.print(i < slen ? str[i] : ' ');
-  smartdelay(0);
 }
 
 void sendData(int Data[], int datalength) {
