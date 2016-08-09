@@ -1,9 +1,28 @@
 /*****************************************************************
-MobileXbeeSensorNode.ino //maybe change in branch // second change
-SFE_MPU9150 Library AHRS Data Fusion Example Code
+MobileXbeeSensorNode.ino 
+Evan Chang-Siu
+CSUM echangsiu@csum.edu
+Original Creation Date: Aug 1, 2016
+https://github.com/evancs/AllisionProject
+
+MPU 9150 Code copied from:
 Kris Winer for Sparkfun Electronics
 Original Creation Date: April 8, 2014
 https://github.com/sparkfun/MPU9150_Breakout
+
+
+GPS code copied from from tinycircuits.com
+https://tinycircuits.com/products/gps-tinyshield
+
+This code utilizes a wireless Xbee as a node to send data from 
+a MPU9150 IMU and tiny GPS.
+Multiple Xbee's can be used and will be uniquely addressed when sent.
+
+Development environment specifics:
+	IDE: Arduino 1.7.9
+	Hardware Platform: TinyDuino 3.3V/8MHz
+	GPS Tiny Shield
+        Tinycirucits mpu9150 tiny shield: https://tinycircuits.com/products/mpu9150-tinyshield
 
 The MPU9150 is a versatile 9DOF sensor. It has a built-in
 accelerometer, gyroscope, and magnetometer that
@@ -14,26 +33,11 @@ This Arduino sketch utilizes Jeff Rowberg's MPU6050 library to generate the basi
 for use in two sensor fusion algorithms becoming increasingly popular with DIY quadcopter and robotics engineers.
 I have added and slightly modified Jeff's library here.
 
-This simple sketch will demo the following:
-* How to create a MPU6050 object, using a constructor (global variables section).
-* How to use the initialize() function of the MPU6050 class.
-* How to read the gyroscope, accelerometer, and magnetometer
-  using the readAcceleration(), readRotation(), and readMag() functions and the
-  gx, gy, gz, ax, ay, az, mx, my, and mz variables.
 * How to calculate actual acceleration, rotation speed, magnetic
   field strength using the  specified ranges as described in the data sheet:
   http://dlnmh9ip6v2uc.cloudfront.net/datasheets/Sensors/IMU/PS-MPU-9150A.pdf
-  and
-  http://dlnmh9ip6v2uc.cloudfront.net/datasheets/Sensors/IMU/RM-MPU-9150A-00.pdf.
-
-In addition, the sketch will demo:
-* How to check for data updates using the data ready status register
-* How to display output at a rate different from the sensor data update and fusion filter update rates
-* How to specify the accelerometer and gyro sampling and bandwidth rates
-* How to use the data from the MPU9150 to fuse the sensor data into a quaternion representation of the sensor frame
-  orientation relative to a fixed Earth frame providing absolute orientation information for subsequent use.
-* An example of how to use the quaternion data to generate standard aircraft orientation data in the form of
-  Tait-Bryan angles representing the sensor yaw, pitch, and roll angles suitable for any vehicle stablization control application.
+  
+Tait-Bryan angles representing the sensor yaw, pitch, and roll angles suitable for any vehicle stablization control application.
 
 Hardware setup: This library supports communicating with the
 MPU9150 over I2C. These are the only connections that need to be made:
@@ -43,28 +47,14 @@ MPU9150 over I2C. These are the only connections that need to be made:
 	 VDD ------------- 3.3V
 	 GND ------------- GND
 
-The MPU9150 has a maximum voltage of 3.5V. Make sure you power it
-off the 3.3V rail! And either use level shifters between SCL
-and SDA or just use a 3.3V Arduino Pro.
-
-Development environment specifics:
-	IDE: Arduino 1.0.5
-	Hardware Platform: Arduino Pro 3.3V/8MHz
-	MPU9150 Breakout Version: 1.0
-
-This code is beerware. If you see me (or any other SparkFun
-employee) at the local, and you've found our code helpful, please
-buy us a round!
-
 Distributed as-is; no warranty is given.
 *****************************************************************/
-
+#include <SoftwareSerial.h>
 #include <Wire.h>
+
 #include "I2Cdev.h"
 #include "MPU6050_9Axis_MotionApps41.h"
-
 #include "TinyGPS.h"
-#include <SoftwareSerial.h>
 
 // Declare device MPU6050 class
 MPU6050 mpu;
@@ -118,9 +108,6 @@ void setup()
 {
   Serial.begin(38400); // Start serial at 38400 bps
 
-
-
-
   // initialize MPU6050 device
   Serial.println(F("Initializing I2C devices..."));
   mpu.initialize();
@@ -130,7 +117,6 @@ void setup()
   Serial.println(mpu.testConnection() ? F("MPU9150 connection successful") : F("MPU9150 connection failed"));
 
   // Set up the accelerometer, gyro, and magnetometer for data output
-
   mpu.setRate(7); // set gyro rate to 8 kHz/(1 * rate) shows 1 kHz, accelerometer ODR is fixed at 1 KHz
 
   MagRate = 10; // set magnetometer read rate in Hz; 10 to 100 (max) Hz are reasonable values
@@ -181,7 +167,6 @@ void setup()
   Serial.println("done.");
 
   Serial.print("Testing TinyGPS library v. "); Serial.println(TinyGPS::library_version());
-  Serial.println("by Mikal Hart");
   Serial.println();
   Serial.println("Sats HDOP Latitude  Longitude  Fix  Date       Time     Date Alt    Course Speed Card  Distance Course Card  Chars Sentences Checksum");
   Serial.println("          (deg)     (deg)      Age                      Age  (m)    --- from GPS ----  ---- to London  ----  RX    RX        Fail");
@@ -243,6 +228,7 @@ void loop()
   delt_t = millis() - count;
   if (delt_t > 500) { // update LCD once per half-second independent of read rate
 
+    //Print raw IMU data
     Serial.print("ax = "); Serial.print((int)1000 * ax);
     Serial.print(" ay = "); Serial.print((int)1000 * ay);
     Serial.print(" az = "); Serial.print((int)1000 * az); Serial.println(" mg");
@@ -275,15 +261,16 @@ void loop()
     yaw   *= 180.0f / PI ; //- 13.8; // Declination at Danville, California is 13 degrees 48 minutes and 47 seconds on 2014-04-04
     roll  *= 180.0f / PI;
 
+    //Print IMU data
     Serial.print("Yaw, Pitch, Roll: ");
     Serial.print(yaw, 2);
     Serial.print(", ");
     Serial.print(pitch, 2);
     Serial.print(", ");
     Serial.println(roll, 2);
-
     //Serial.print("rate = "); Serial.print((float)1.0f / deltat, 2); Serial.println(" Hz");
-
+    
+    //Print GPS data
     print_int(gps.satellites(), TinyGPS::GPS_INVALID_SATELLITES, 5);
     print_int(gps.hdop(), TinyGPS::GPS_INVALID_HDOP, 5);
     gps.f_get_position(&flat, &flon, &age);
@@ -305,21 +292,16 @@ void loop()
     print_int(failed, 0xFFFFFFFF, 9);
     Serial.println();
 
-    // smartdelay(1000);
-    
-    //Wireless Data Transmission
+    //Wireless Data Transmission *********************************************
+    //load datapacket
     datapacket[0]=yaw;
     datapacket[1]=pitch;
-    datapacket[2]=roll;
-    
-    datapacket[0]=300;
-    datapacket[1]=257;
-    datapacket[2]=11;
-    
+    datapacket[2]=roll;    
+   
+    //send wireless data
     sendData(datapacket, sizeof(datapacket));
 
-    count = millis();
-    
+    count = millis();    
   }
 }
 
@@ -428,19 +410,8 @@ void MadgwickQuaternionUpdate(float ax, float ay, float az, float gx, float gy, 
   q[1] = q2 * norm;
   q[2] = q3 * norm;
   q[3] = q4 * norm;
-
 }
 
-
-static void smartdelay(unsigned long ms)
-{
-  unsigned long start = millis();
-  do
-  {
-    while (ss.available())
-      gps.encode(ss.read());
-  } while (millis() - start < ms);
-}
 
 static void print_float(float val, float invalid, int len, int prec)
 {
@@ -516,17 +487,7 @@ void sendData(int Data[], int datalength) {
   Serial.write(0x10); //Frame type
   Serial.write(0x01); //FrameID
 
-  //RECEIVER_1
-  // Serial.write(0x00 ); //64-bit dest. address
-  // Serial.write(0x13 ); //64-bit dest. address
-  // Serial.write(0xA2 ); //64-bit dest. address
-  // Serial.write(0x00 ); //64-bit dest. address
-  // Serial.write(0x41 ); //64-bit dest. address
-  // Serial.write(0x52 ); //64-bit dest. address
-  // Serial.write(0x78 ); //64-bit dest. address
-  // Serial.write(0xA0 ); //64-bit dest. address
-
-  //RECEIVER_2
+  //RECEIVER
   Serial.write((byte)0x00); //64-bit dest. address
   Serial.write(0x13); //64-bit dest. address
   Serial.write(0xA2); //64-bit dest. address
@@ -535,6 +496,16 @@ void sendData(int Data[], int datalength) {
   Serial.write(0x52); //64-bit dest. address
   Serial.write(0x78); //64-bit dest. address
   Serial.write(0xB6); //64-bit dest. address
+  
+  //SENDER
+  // Serial.write(0x00 ); //64-bit dest. address
+  // Serial.write(0x13 ); //64-bit dest. address
+  // Serial.write(0xA2 ); //64-bit dest. address
+  // Serial.write(0x00 ); //64-bit dest. address
+  // Serial.write(0x41 ); //64-bit dest. address
+  // Serial.write(0x52 ); //64-bit dest. address
+  // Serial.write(0x78 ); //64-bit dest. address
+  // Serial.write(0xA0 ); //64-bit dest. address
 
   //Broadcast
   // Serial.write( (byte)0x0); //64-bit dest. address
