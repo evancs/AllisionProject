@@ -10,28 +10,24 @@ Kris Winer for Sparkfun Electronics
 Original Creation Date: April 8, 2014
 https://github.com/sparkfun/MPU9150_Breakout
 
-
 GPS code copied from from tinycircuits.com
 https://tinycircuits.com/products/gps-tinyshield
 
 This code utilizes a wireless Xbee as a node to send data from 
-a MPU9150 IMU and tiny GPS.
-Multiple Xbee's can be used and will be uniquely addressed when sent.
+an MPU9150 IMU and tiny GPS.
+Multiple Xbee's can be used and will be uniquely addressed when sent to the RECEIVER address.
 
 Development environment specifics:
 	IDE: Arduino 1.7.9
-	Hardware Platform: TinyDuino 3.3V/8MHz
-	GPS Tiny Shield
-        Tinycirucits mpu9150 tiny shield: https://tinycircuits.com/products/mpu9150-tinyshield
+	Hardware Platform: TinyDuino 3.3V/8MHz https://tinycircuits.com/products/tinyduino-processor-board
+	GPS Tiny Shield https://tinycircuits.com/products/gps-tinyshield
+        Tinycircuits mpu9150 tiny shield: https://tinycircuits.com/products/mpu9150-tinyshield
 
 The MPU9150 is a versatile 9DOF sensor. It has a built-in
 accelerometer, gyroscope, and magnetometer that
 functions over I2C. It is very similar to the 6 DoF MPU6050 for which an extensive library has already been built.
-Most of the function of the MPU9150 can utilize the MPU6050 library.
-
-This Arduino sketch utilizes Jeff Rowberg's MPU6050 library to generate the basic sensor data
+Most of the function of the MPU9150 can utilize the MPU6050 library. Jeff Rowberg's MPU6050 library is used generate the basic sensor data
 for use in two sensor fusion algorithms becoming increasingly popular with DIY quadcopter and robotics engineers.
-I have added and slightly modified Jeff's library here.
 
 * How to calculate actual acceleration, rotation speed, magnetic
   field strength using the  specified ranges as described in the data sheet:
@@ -39,16 +35,9 @@ I have added and slightly modified Jeff's library here.
   
 Tait-Bryan angles representing the sensor yaw, pitch, and roll angles suitable for any vehicle stablization control application.
 
-Hardware setup: This library supports communicating with the
-MPU9150 over I2C. These are the only connections that need to be made:
-	MPU9150 --------- Arduino
-	 SCL ---------- SCL (A5 on older 'Duinos')
-	 SDA ---------- SDA (A4 on older 'Duinos')
-	 VDD ------------- 3.3V
-	 GND ------------- GND
-
 Distributed as-is; no warranty is given.
 *****************************************************************/
+
 #include <SoftwareSerial.h>
 #include <Wire.h>
 
@@ -75,8 +64,6 @@ TinyGPS gps;
 // In any case, this is the free parameter in the Madgwick filtering and fusion scheme.
 #define beta sqrt(3.0f / 4.0f) * GyroMeasError   // compute beta
 #define zeta sqrt(3.0f / 4.0f) * GyroMeasDrift   // compute zeta, the other free parameter in the Madgwick scheme usually set to a small or zero value
-#define Kp 2.0f * 5.0f // these are the free parameters in the Mahony filter and fusion scheme, Kp for proportional feedback, Ki for integral
-#define Ki 0.0f
 
 const int GPS_ONOFFPin = A3;
 const int GPS_SYSONPin = A2;
@@ -88,12 +75,10 @@ uint16_t count = 0;  // used to control display output rate
 uint16_t delt_t = 0; // used to control display output rate
 uint16_t mcount = 0; // used to control display output rate
 uint8_t MagRate;     // read rate for magnetometer data
-
 float pitch, yaw, roll;
 float deltat = 0.0f;        // integration interval for both filter schemes
 uint16_t lastUpdate = 0; // used to calculate integration interval
 uint16_t now = 0;        // used to calculate integration interval
-
 float ax, ay, az, gx, gy, gz, mxraw, myraw, mzraw; // variables to hold latest sensor data values
 float q[4] = {1.0f, 0.0f, 0.0f, 0.0f};    // vector to hold quaternion
 float eInt[3] = {0.0f, 0.0f, 0.0f};       // vector to hold integral error for Mahony method
@@ -248,7 +233,6 @@ void loop()
     //Serial.print(" qy = "); Serial.print(q[2]);
     //Serial.print(" qz = "); Serial.println(q[3]);
 
-
     // Define output variables from updated quaternion---these are Tait-Bryan angles, commonly used in aircraft orientation.
     // In this coordinate system, the positive z-axis is down toward Earth.
     // Yaw is the angle between Sensor x-axis and Earth magnetic North (or true North if corrected for local declination, looking down on the sensor positive yaw is counterclockwise.
@@ -303,7 +287,7 @@ void loop()
     datapacket[2]=roll;    
    
     //send wireless data
-    sendData(datapacket, sizeof(datapacket));
+    sendWirelessData(datapacket, sizeof(datapacket));
 
     count = millis();    
   }
@@ -476,7 +460,7 @@ static void print_str(const char *str, int len)
     Serial.print(i < slen ? str[i] : ' ');
 }
 
-void sendData(int Data[], int datalength) {
+void sendWirelessData(int Data[], int datalength) {
   Serial.write(0x7E); //start byte
 
   //16 bytes  //length
@@ -487,7 +471,7 @@ void sendData(int Data[], int datalength) {
   Serial.write(0x10); //Frame type
   Serial.write(0x01); //FrameID
 
-  //RECEIVER
+  // RECEIVER address connected to data logging laptop
   Serial.write((byte)0x00); //64-bit dest. address
   Serial.write(0x13); //64-bit dest. address
   Serial.write(0xA2); //64-bit dest. address
@@ -496,18 +480,8 @@ void sendData(int Data[], int datalength) {
   Serial.write(0x52); //64-bit dest. address
   Serial.write(0x78); //64-bit dest. address
   Serial.write(0xB6); //64-bit dest. address
-  
-  //SENDER
-  // Serial.write(0x00 ); //64-bit dest. address
-  // Serial.write(0x13 ); //64-bit dest. address
-  // Serial.write(0xA2 ); //64-bit dest. address
-  // Serial.write(0x00 ); //64-bit dest. address
-  // Serial.write(0x41 ); //64-bit dest. address
-  // Serial.write(0x52 ); //64-bit dest. address
-  // Serial.write(0x78 ); //64-bit dest. address
-  // Serial.write(0xA0 ); //64-bit dest. address
 
-  //Broadcast
+  // Use this address to Broadcast too any node
   // Serial.write( (byte)0x0); //64-bit dest. address
   // Serial.write( (byte)0x0); //64-bit dest. address
   // Serial.write( (byte)0x0); //64-bit dest. address
@@ -534,7 +508,7 @@ void sendData(int Data[], int datalength) {
   chexsum = chexsum+(byte)(Data[i]>>8)+(byte)Data[i]; //add all data packets
   } 
 
-  Serial.write(0xFF - (chexsum & 0xFF)); //Checksum
+  Serial.write(0xFF - (chexsum & 0xFF)); //Compute Checksum
 }
 
 
