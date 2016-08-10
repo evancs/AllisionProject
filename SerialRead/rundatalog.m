@@ -7,33 +7,18 @@ function [rawdata_exp] = rundatalog(fname)
 % for serial in general
 
 % create serial object
-com = 'COM21'; % specify com channel
-bdr = 38400; % MATCH BAUDRATE WITH XBEE!!!
+com = 'COM21'; % MUST CHECK COM PORT OF XBEE
+bdr = 38400; % MATCH BAUDRATE WITH XBEEs!!!
 bfs_exp = 22 ; % datapacketsize 
-s_exp = serial(com,'BaudRate',bdr,'DataBits',8,'StopBits',1,'InputBufferSize',bfs_exp, 'Parity', 'none');
+s_exp = serial(com,'BaudRate',bdr,'DataBits',8,'StopBits',1,'InputBufferSize', bfs_exp, 'Parity', 'none');
 
 % open serial channel
 fopen(s_exp);
 
 %initialize
-rawdata_exp = zeros(bfs_exp+6,10);
+rawdata_exp = zeros(bfs_exp+6,10); % datapacketsize + clock size
 
 tic
-% Read data streaming from XBEE
-% for i = 1:10
-%     try
-%         if s_exp.BytesAvailable>0
-%             datasize = s_exp.BytesAvailable;
-%             rawdata_exp(1:datasize,i)= fread(s_exp,datasize,'uchar'); 
-%             clock
-%         end
-%         pause(.5); %pause time set to the same period as Arduino sending rate
-%     catch ME
-%         fclose(s_exp)
-%         throw(ME)
-%     end    
-% end
-
 k=1;
 for i = 1:10000
     try
@@ -43,7 +28,6 @@ for i = 1:10000
             k=k+1;
             'hi'
         end
-        %pause(.5); %pause time set to the same period as Arduino sending rate
     catch ME
         fclose(s_exp)
         throw(ME)
