@@ -1,5 +1,5 @@
 /*****************************************************************
-MobileXbeeSensorNode.ino // blah blah blagh
+MobileXbeeSensorNode.ino 
 Evan Chang-Siu
 CSUM echangsiu@csum.edu
 Original Creation Date: Aug 1, 2016
