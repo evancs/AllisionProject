@@ -288,11 +288,11 @@ void loop()
     
     datapacket[0]=300;
     datapacket[1]=127;
-    datapacket[2]=11;   //C4 com 17
+    datapacket[2]=11;   //C4 com 27
     
     datapacket[0]=millis();
     datapacket[1]=130;
-    datapacket[2]=15; //A0 com 26
+    datapacket[2]=15; //A0 com 28
    
     //send wireless data
     sendWirelessData(datapacket, sizeof(datapacket));
